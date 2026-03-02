@@ -1,8 +1,7 @@
 diff -ruN a/kernel/supercalls.c b/kernel/supercalls.c
 --- a/kernel/supercalls.c
 +++ b/kernel/supercalls.c
-@@ -1051,6 +1051,12 @@
- 			return 0;
+@@ -1053,6 +1053,12 @@
  		}
  #endif // #ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
 +#ifdef CONFIG_KSU_SUSFS_SUS_KSTAT_REDIRECT

@@ -184,11 +184,9 @@ jobs:
     - name: Fix KSU-Next Upstream Bugs
       working-directory: ${{ env.KERNEL_ROOT }}/${{ env.KSU_DIR }}
       run: |
-        # 2fae51d excluded syscall_hook_manager from build but left unconditional calls
-        if grep -q '#ifndef CONFIG_KSU_SUSFS' kernel/supercalls.c 2>/dev/null; then
-          sed -i '/#ifndef CONFIG_KSU_SUSFS/{N;/syscall_hook_manager\.h/{N;s/#ifndef CONFIG_KSU_SUSFS\n\(#include "syscall_hook_manager\.h"\)\n#endif.*$/\1/}}' kernel/supercalls.c
-          grep -q 'syscall_hook_manager.o' kernel/Kbuild || sed -i '/^kernelsu-objs += extras.o/a kernelsu-objs += syscall_hook_manager.o' kernel/Kbuild
-        fi
+        # 2fae51d left an unconditional ksu_mark_running_process() call in supercalls.c
+        # but syscall_hook_manager.c (which defines it) is correctly excluded when SUSFS is enabled
+        sed -i 's/        ksu_mark_running_process();/#ifndef CONFIG_KSU_SUSFS\n        ksu_mark_running_process();\n#endif/' kernel/supercalls.c
 
     - name: Fix Old Kernel Compatibility
       working-directory: ${{ env.KERNEL_ROOT }}/common
