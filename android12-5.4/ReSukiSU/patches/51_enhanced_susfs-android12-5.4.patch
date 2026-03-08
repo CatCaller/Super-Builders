@@ -1,18 +1,10 @@
 diff -ruN post-upstream/fs/Kconfig work-50/fs/Kconfig
 --- post-upstream/fs/Kconfig	2026-03-07 18:48:14.058758336 +0100
 +++ work-50/fs/Kconfig	2026-03-07 18:55:11.888242585 +0100
-@@ -339,3 +339,27 @@
+@@ -339,3 +339,19 @@
      default y
      help
        Blocks filesystem path attacks using unicode characters.
-+
-+config KSU_SUSFS_UID_GATED_HIDING
-+    bool "UID-gated hiding (apps only, uid >= 10000)"
-+    depends on KSU_SUSFS
-+    default y
-+    help
-+      Restricts SUSFS hiding behavior to app processes (uid >= 10000).
-+      When disabled, all processes with TIF_PROC_UMOUNTED see hiding.
 +
 +config KSU_SUSFS_HIDDEN_NAME
 +    bool "Hidden Android/data package names"
@@ -345,16 +337,13 @@ diff -ruN post-upstream/include/linux/susfs.h work-50/include/linux/susfs.h
 diff -ruN post-upstream/include/linux/susfs_def.h work-50/include/linux/susfs_def.h
 --- post-upstream/include/linux/susfs_def.h	2026-03-07 18:48:16.055161574 +0100
 +++ work-50/include/linux/susfs_def.h	2026-03-07 19:13:56.507470865 +0100
-@@ -80,8 +80,12 @@
+@@ -80,8 +80,7 @@
  }
  
  static inline bool susfs_is_current_proc_umounted_app(void) {
-+#ifdef CONFIG_KSU_SUSFS_UID_GATED_HIDING
- 	return (test_ti_thread_flag(&current->thread_info, TIF_PROC_UMOUNTED) &&
- 			current_uid().val >= 10000);
-+#else
+-	return (test_ti_thread_flag(&current->thread_info, TIF_PROC_UMOUNTED) &&
+-			current_uid().val >= 10000);
 +	return test_ti_thread_flag(&current->thread_info, TIF_PROC_UMOUNTED);
-+#endif
  }
  
  #ifdef CONFIG_ZEROMOUNT
