@@ -94,6 +94,10 @@ if [ -n "$KCONFIG_SEARCH_DIR" ] && [ -d "$KCONFIG_SEARCH_DIR" ]; then
   mv "$tmpfile" "$DEFCONFIG"
 fi
 
+# Disable IKHEADERS — embeds kernel headers in image, not needed and
+# triggers build failures when cpio/xz tools are missing on CI runners
+sed -i 's/^CONFIG_IKHEADERS=y/# CONFIG_IKHEADERS is not set/' "$DEFCONFIG" 2>/dev/null || true
+
 # LTO mode override
 LTO_MODE="${LTO_MODE:-thin}"
 if [ "$LTO_MODE" = "none" ]; then
