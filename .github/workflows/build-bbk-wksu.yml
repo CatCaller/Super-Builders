@@ -368,20 +368,27 @@ jobs:
         else
           cd "$KERNEL_COMMON"
 
-          # OEM Makefiles hardcode -Werror after KCFLAGS — strip it for system clang compat
-          sed -i 's/-Werror[^ ]*//g' Makefile scripts/Makefile.extrawarn 2>/dev/null || true
+          # Wrap clang to strip -Werror — OEM Makefiles inject it everywhere,
+          # and system clang is stricter than the OEM's prebuilt
+          REAL_CLANG=$(command -v clang)
+          cat > /tmp/clang-no-werror << WRAP
+          #!/bin/bash
+          args=()
+          for a in "\$@"; do [[ "\$a" == "-Werror" ]] || args+=("\$a"); done
+          exec "$REAL_CLANG" "\${args[@]}"
+          WRAP
+          chmod +x /tmp/clang-no-werror
 
           make O=out ARCH=arm64 LLVM=1 \
-            CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm \
+            CC=/tmp/clang-no-werror LD=ld.lld AR=llvm-ar NM=llvm-nm \
             OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip \
             CROSS_COMPILE=aarch64-linux-gnu- \
             gki_defconfig
 
           make -j"$(nproc)" O=out ARCH=arm64 LLVM=1 \
-            CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm \
+            CC=/tmp/clang-no-werror LD=ld.lld AR=llvm-ar NM=llvm-nm \
             OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            KCFLAGS="-Wno-error" || BUILD_RC=$?
+            CROSS_COMPILE=aarch64-linux-gnu- || BUILD_RC=$?
           cd "$SYNC_DIR"
         fi
 

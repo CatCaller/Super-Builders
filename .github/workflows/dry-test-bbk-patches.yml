@@ -347,10 +347,17 @@ jobs:
       run: |
         export PATH="${CLANG_BIN}:$PATH"
 
-        sed -i 's/-Werror[^ ]*//g' Makefile scripts/Makefile.extrawarn 2>/dev/null || true
+        REAL_CLANG=$(command -v clang)
+        cat > /tmp/clang-no-werror << WRAP
+        #!/bin/bash
+        args=()
+        for a in "\$@"; do [[ "\$a" == "-Werror" ]] || args+=("\$a"); done
+        exec "$REAL_CLANG" "\${args[@]}"
+        WRAP
+        chmod +x /tmp/clang-no-werror
 
         MAKE="make O=out ARCH=arm64 LLVM=1 \
-          CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm \
+          CC=/tmp/clang-no-werror LD=ld.lld AR=llvm-ar NM=llvm-nm \
           OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip \
           CROSS_COMPILE=aarch64-linux-gnu-"
 
@@ -384,7 +391,7 @@ jobs:
         printf '  %s\n' "${TARGETS[@]}"
 
         COMPILE_RC=0
-        $MAKE -j"$(nproc)" KCFLAGS="-Wno-error" "${TARGETS[@]}" || COMPILE_RC=$?
+        $MAKE -j"$(nproc)" "${TARGETS[@]}" || COMPILE_RC=$?
 
         if [ "$COMPILE_RC" -ne 0 ]; then
           echo "::error::Targeted compilation failed (exit $COMPILE_RC)"
