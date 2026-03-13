@@ -108,6 +108,11 @@ fi
 sed -i 's/^CONFIG_IKHEADERS=y/# CONFIG_IKHEADERS is not set/' "$DEFCONFIG" 2>/dev/null || true
 sed -i 's/^CONFIG_WERROR=y/# CONFIG_WERROR is not set/' "$DEFCONFIG" 2>/dev/null || true
 
+# Disable DEBUG_INFO_BTF — resolve_btfids fails when system pahole
+# version doesn't match what the kernel expects (common on CI runners)
+sed -i 's/^CONFIG_DEBUG_INFO_BTF=y/# CONFIG_DEBUG_INFO_BTF is not set/' "$DEFCONFIG" 2>/dev/null || true
+sed -i 's/^CONFIG_DEBUG_INFO_BTF_MODULES=y/# CONFIG_DEBUG_INFO_BTF_MODULES is not set/' "$DEFCONFIG" 2>/dev/null || true
+
 # LTO mode override
 LTO_MODE="${LTO_MODE:-thin}"
 if [ "$LTO_MODE" = "none" ]; then
