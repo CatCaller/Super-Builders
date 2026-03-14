@@ -299,7 +299,7 @@ jobs:
         } >> "$GITHUB_ENV"
 
     - name: Download AnyKernel3
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: anykernel3
         path: AnyKernel3
@@ -543,7 +543,7 @@ jobs:
               cp "$EXTRA_PATH" "$ANYKERNEL/$EXTRA"
               echo "Extra: $EXTRA ($(stat -c%s "$EXTRA_PATH") bytes)"
             else
-              echo "::warning::Extra artifact '$EXTRA' not found in $DIST_DIR"
+              echo "Extra artifact '$EXTRA' not found in $DIST_DIR"
             fi
           done
         fi
