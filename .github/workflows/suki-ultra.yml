@@ -63,7 +63,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - sub_level: "162"
+          - sub_level: "145"
             os_patch_level: "2026-03"
     uses: ./.github/workflows/build-sukisu.yml
     with:
